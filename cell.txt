@@ -1,0 +1,347 @@
+1.	import pandas as pa
+2.	import pandas as pa 
+3.	import numpy as np
+4.	import seaborn as sns
+5.	import seaborn as sns
+6.	import matplotlib.pyplot as plt
+7.	from sklearn.preprocessing import LabelEncoder
+8.	import sklearn
+9.	import pandas as pd
+10.	import os
+11.	color = sns.color_palette()
+12.	sns.set_style('darkgrid')
+13.	%matplotlib inline
+14.	pd.set_option('display.float_format', lambda x: '{:.5f}'.format(x))  # 限制浮点输出到小数点后3位
+15.	df = pd.read_csv('D:\mobile price\mobile phone price prediction.csv').drop('Unnamed: 0', axis = 1)
+16.	df.head()
+17.	df.shape
+18.	df['Ram'].value_counts()
+19.	patterns = ['Helio G90T', '6000 mAh Battery with 22.5W Fast Charging']
+20.	df = df[~df['Ram'].str.contains('|'.join(patterns))]
+21.	value_counts = df['Ram'].value_counts()
+22.	print(value_counts)
+23.	df['Ram'] = df['Ram'].str.split(' ', expand=True)[0].astype(float)
+24.	df['Battery'] = df['Battery'].str.split(' ', expand=True)[0].astype(float)
+25.	df['Display'] = df['Display'].str.split(' ', expand=True)[0].astype(float)
+26.	df.isnull().sum()
+27.	df.drop(['Android_version'],axis=1,inplace=True)
+28.	df.drop(['Name'],axis=1,inplace=True)
+29.	df.head()
+30.	import sklearn
+31.	from sklearn.impute import SimpleImputer
+32.	imputer=SimpleImputer(strategy='most_frequent')
+33.	df['Inbuilt_memory']=imputer.fit_transform(df[['Inbuilt_memory']]).ravel()
+34.	df.isnull().sum()
+35.	df['Inbuilt_memory'] = df['Inbuilt_memory'].str.extract(r'(\d+)').astype(float)
+36.	df['fast_charging'] = df['fast_charging'].str.extract(r'(\d+)').astype(float)
+37.	imputer = SimpleImputer(strategy='most_frequent')
+38.	
+39.	df['fast_charging'] = imputer.fit_transform(df[['fast_charging']]).ravel()
+40.	df.head()
+41.	df['Processor_name'].value_counts()
+42.	df['Processor_name'].nunique()
+43.	df.drop(['Processor_name'],axis=1,inplace=True)
+44.	df.head()
+45.	df['Processor'].value_counts()
+46.	df['Processor'] = df['Processor'].str.strip()
+47.	processor_mapping = {
+48.	    'Octa Core': 'Octa Core',
+49.	    'Octa Core Processor': 'Octa Core',
+50.	    'Quad Core': 'Quad Core',
+51.	    'Deca Core': 'Deca Core',
+52.	    'Deca Core Processor': 'Deca Core',
+53.	    'Nine-Cores': 'Nine Core',
+54.	    'Nine Core': 'Nine Core',
+55.	    'Nine Cores': 'Nine Core',
+56.	    '1.6 GHz Processor': '1.6 GHz Processor',
+57.	    '2 GHz Processor': '2 GHz Processor',
+58.	    '1.8 GHz Processor': '1.8 GHz Processor',
+59.	    '1.3 GHz Processor': '1.3 GHz Processor',
+60.	    '2.3 GHz Processor': '2.3 GHz Processor'}
+61.	df['Processor'] = df['Processor'].replace(processor_mapping)
+62.	print(df['Processor'].value_counts())
+63.	imputer = SimpleImputer(strategy='most_frequent')
+64.	df['Processor'] = imputer.fit_transform(df[['Processor']]).ravel()
+65.	print(df['Processor'].value_counts())
+66.	df.head()
+67.	print(df['Processor'].value_counts())
+68.	df['No_of_sim'].value_counts()
+69.	df['No_of_sim'] = df['No_of_sim'].str.strip()
+70.	sim_importance_mapping = {
+71.	    'No Sim Supported,': 0,
+72.	    'Single Sim, 3G, 4G,': 1,
+73.	    'Dual Sim, 3G, VoLTE,': 2,
+74.	    'Single Sim, 3G, 4G, VoLTE,': 3,
+75.	    'Dual Sim, 3G, 4G,': 4,
+76.	    'Dual Sim, 3G, 4G, VoLTE,': 5,
+77.	    'Single Sim, 3G, 4G, 5G, VoLTE,': 6,
+78.	    'Dual Sim, 3G, 4G, 5G, VoLTE,': 7,
+79.	    'Single Sim, 3G, 4G, 5G, VoLTE, Vo5G,': 8,
+80.	    'Dual Sim, 3G, 4G, 5G, VoLTE, Vo5G,': 9}
+81.	df['Sim_encoded'] = df['No_of_sim'].replace(sim_importance_mapping)
+82.	df.drop(['No_of_sim'],axis=1,inplace=True)
+83.	df.shape
+84.	df['Camera'].value_counts()
+85.	patterns = ['Foldable Display, Dual Display']
+86.	df = df[~df['Camera'].str.contains('|'.join(patterns))]
+87.	value_counts = df['Camera'].value_counts()
+88.	print(value_counts)
+89.	import re
+90.	def extract_back_camera_mp(camera_str):
+91.	    back_camera_part = re.search(r'(\d+) MP', camera_str)
+92.	    if back_camera_part:
+93.	        return int(back_camera_part.group(1))
+94.	    return 0
+95.	def extract_front_camera_mp(camera_str):
+96.	    front_camera_part = re.search(r'(\d+) MP Front', camera_str)
+97.	    if front_camera_part:
+98.	        return int(front_camera_part.group(1))
+99.	    return 0
+100.	df['Back_Camera_MP'] = df['Camera'].apply(extract_back_camera_mp)
+101.	df['Front_Camera_MP'] = df['Camera'].apply(extract_front_camera_mp)
+102.	from sklearn.preprocessing import OrdinalEncoder
+103.	encoder = OrdinalEncoder()
+104.	df['Processor_Encoded'] = encoder.fit_transform(df[['Processor']])
+105.	df.head()
+106.	df.shape
+107.	(1299, 17)
+108.	def extract_resolution_pixels(resolution_str):
+109.	    match = re.search(r'(\d+) x (\d+)', resolution_str)
+110.	    if match:
+111.	        width, height = map(int, match.groups())
+112.	        return width * height
+113.	    return 0
+114.	# Apply the function to create a new column for total pixels
+115.	df['Total_Pixels'] = df['Screen_resolution'].apply(extract_resolution_pixels)
+116.	df.head()
+117.	df.drop(['Screen_resolution'],axis=1,inplace=True)
+118.	df.head()
+119.	df['company'].value_counts(0)
+120.	df.drop(columns=['Camera','External_Memory','Processor'],inplace=True)
+121.	df.head()
+122.	company_mapping = {
+123.	    'Apple': 1,
+124.	    'Samsung': 2,
+125.	    'Huawei': 3,
+126.	    'Xiaomi': 4,
+127.	    'Oppo': 5,
+128.	    'IQOO': 6,
+129.	    'iQOO':6,
+130.	    'Vivo': 7,
+131.	    'OnePlus': 8,
+132.	    'Google': 9,
+133.	    'Motorola': 10,
+134.	    'Realme': 11,
+135.	    'Asus': 12,
+136.	    'Honor': 13,
+137.	    'Nokia': 14,
+138.	    'Sony': 15,
+139.	    'LG': 16,
+140.	    'Lenovo': 17,
+141.	    'TCL': 18,
+142.	    'Lava': 19,
+143.	    'itel': 20,
+144.	    'Tecno': 21,
+145.	    'Gionee': 22,
+146.	    'Nothing': 23,
+147.	    'Coolpad': 24,
+148.	    'POCO': 25,
+149.	    'Poco': 25,
+150.	    'Itel': 20,
+151.	    'OPPO': 5
+152.	}
+153.	df['company_encoded'] = df['company'].replace(company_mapping)
+154.	df.head()
+155.	df.drop(['company'],axis=1,inplace=True)
+156.	df['Price'] = df['Price'].str.replace(',', '').astype(int)
+157.	df.info()
+158.	plt.figure(figsize=(14, 4))
+159.	plt.subplot(121)
+160.	plt.scatter(x=df['Rating'], y=df['Price'])
+161.	plt.ylabel('Price', fontsize=13)
+162.	plt.xlabel('Rating', fontsize=13)
+163.	plt.figure(figsize=(14, 4))
+164.	plt.subplot(121)
+165.	plt.scatter(x=df['Rating'], y=df['Price'])
+166.	plt.ylabel('Price', fontsize=13)
+167.	plt.xlabel('Rating', fontsize=13)
+168.	plt.figure(figsize=(14, 4))
+169.	plt.subplot(121)
+170.	plt.scatter(x=df['Spec_score'], y=df['Price'])
+171.	plt.ylabel('Price', fontsize=13)
+172.	plt.xlabel('Spec_score', fontsize=13)
+173.	df = df.drop(df[(df['Spec_score'] <50) & (df['Price'] < 50000)].index)
+174.	plt.subplot(122)
+175.	plt.scatter(df['Spec_score'], df['Price'])
+176.	plt.ylabel('Price', fontsize=13)
+177.	plt.xlabel('Spec_score', fontsize=13)
+178.	Text(0.5, 0, 'Spec_score')
+179.	corrmat = df.corr()
+180.	plt.figure(figsize=(8,6))
+181.	sns.heatmap(corrmat, vmax=0.9, square=True)
+182.	from scipy.stats import norm, skew 
+183.	from scipy import stats
+184.	fig, ax = plt.subplots(nrows=2, figsize=(6, 10))
+185.	sns.distplot(df['Price'], fit=norm, ax=ax[0])
+186.	(mu, sigma) = norm.fit(df['Price'])
+187.	ax[0].legend(['Normal dist. ($\mu=$ {:.2f} and $\sigma=$ {:.2f} )'.format(mu, sigma)], loc='best')
+188.	ax[0].set_ylabel('Frequency')
+189.	ax[0].set_title('Price distribution')
+190.	stats.probplot(df['Price'], plot=ax[1])
+191.	plt.show()
+192.	df["Price"] = np.log1p(df["Price"]) 
+193.	fig, ax = plt.subplots(nrows=2, figsize=(6, 10))
+194.	sns.distplot(df['Price'], fit=norm, ax=ax[0])
+195.	(mu, sigma) = norm.fit(df['Price'])
+196.	ax[0].legend(['Normal dist. ($\mu=$ {:.2f} and $\sigma=$ {:.2f} )'.format(
+197.	    mu, sigma)], loc='best')
+198.	ax[0].set_ylabel('Frequency')
+199.	ax[0].set_title('Price distribution')
+200.	stats.probplot(df['Price'], plot=ax[1])
+201.	plt.show()
+202.	numeric_feats = df.dtypes[df.dtypes != "object"].index  
+203.	numeric_data = df[numeric_feats]
+204.	skewed_feats = numeric_data.apply(lambda x: skew(x.dropna())).sort_values(ascending=False)
+205.	skewness = pd.DataFrame({'Skew' :skewed_feats})
+206.	skewness.head(10)
+207.	new_skewness = skewness[skewness.abs() > 0.75]
+208.	print("有{}个高偏度特征被Box-Cox变换".format(new_skewness.shape[0]))
+209.	from scipy.special import boxcox1p
+210.	skewed_features = new_skewness.index 
+211.	lam = 0.15
+212.	for feat in skewed_features:
+213.	    df[feat] = boxcox1p(df[feat], lam)
+214.	numeric_feats = df.dtypes[df.dtypes != "object"].index  
+215.	numeric_data = df[numeric_feats]
+216.	skewed_feats = numeric_data.apply(lambda x: skew(x.dropna())).sort_values(ascending=False)
+217.	skewness = pd.DataFrame({'Skew' :skewed_feats})
+218.	skewness.head(10)
+219.	from sklearn.linear_model import ElasticNet, Lasso
+220.	from sklearn.ensemble import GradientBoostingRegressor
+221.	from sklearn.kernel_ridge import KernelRidge
+222.	from sklearn.pipeline import make_pipeline
+223.	from sklearn.preprocessing import RobustScaler
+224.	from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin, clone
+225.	from sklearn.model_selection import KFold, cross_val_score, train_test_split
+226.	from sklearn.metrics import mean_squared_error
+227.	import xgboost as xgb
+228.	import lightgbm as lgb
+229.	from sklearn.linear_model import ElasticNet, Lasso
+230.	from sklearn.ensemble import GradientBoostingRegressor
+231.	from sklearn.kernel_ridge import KernelRidge
+232.	from sklearn.pipeline import make_pipeline
+233.	from sklearn.preprocessing import RobustScaler
+234.	from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin, clone
+235.	from sklearn.model_selection import KFold, cross_val_score, train_test_split
+236.	from sklearn.metrics import mean_squared_error
+237.	import xgboost as xgb
+238.	import lightgbm as lgb
+239.	train = df.sample(n=800)
+240.	y_train = train.Price.values
+241.	test = df.drop(train.index)
+242.	y_test=test.Price.values
+243.	#五级评价函数
+244.	n_folds = 5
+245.	def rmsle_cv(model):
+246.	    kf = KFold(n_folds, shuffle=True, random_state=42).get_n_splits(train.values)
+247.	    rmse = np.sqrt(-cross_val_score(model, train.values, y_train, scoring="neg_mean_squared_error", cv=kf))
+248.	    return(rmse)
+249.	#LASSO Regression（套索回归）
+250.	lasso = make_pipeline(RobustScaler(), Lasso(alpha=0.0005, random_state=1))
+251.	#Kernel Ridge Regression（核岭回归）
+252.	KRR = KernelRidge(alpha=0.6, kernel='polynomial', degree=2, coef0=2.5)
+253.	#ElasticNet Regression（弹性网络）
+254.	ENet = make_pipeline(RobustScaler(), ElasticNet(alpha=0.0005, l1_ratio=.9, random_state=3))
+255.	#Gradient Boosting Regression（梯度提升回归GBRT）
+256.	GBoost = GradientBoostingRegressor(n_estimators=3000, learning_rate=0.05,
+257.	                                   max_depth=4, max_features='sqrt',
+258.	                                   min_samples_leaf=15, min_samples_split=10,
+259.	                                   loss='huber', random_state=5) # 设置hue loss使其对异常值具有鲁棒性
+260.	#XGBoost（极致梯度回归）
+261.	model_xgb = xgb.XGBRegressor(colsample_bytree=0.5, gamma=0.05,
+262.	                             learning_rate=0.05, max_depth=3,
+263.	                             min_child_weight=1.8, n_estimators=2200,
+264.	                             reg_alpha=0.5, reg_lambda=0.8,
+265.	                             subsample=0.5, random_state=7, nthread=-1)
+266.	#LightGBM
+267.	model_lgb = lgb.LGBMRegressor(objective='regression', num_leaves=5,
+268.	                              learning_rate=0.05, n_estimators=720,
+269.	                              max_bin=55, bagging_fraction=0.8,
+270.	                              bagging_freq=5, feature_fraction=0.2,
+271.	                              feature_fraction_seed=9, bagging_seed=9,
+272.	                              min_data_in_leaf=6, min_sum_hessian_in_leaf=11, verbose=-1)
+273.	models = {'Lasso': lasso, 'ElasticNet': ENet, 'Kernel Ridge': KRR, 
+274.	          'Gradient Boosting': GBoost, 'XGBoost': model_xgb, 'LightGBM': model_lgb}
+275.	for model_name, model in models.items():
+276.	    score = rmsle_cv(model)
+277.	    print("{}: {:.4f} ({:.4f})\n".format(model_name, score.mean(), score.std()))
+278.	class StackingAveragedModels(BaseEstimator, RegressorMixin, TransformerMixin):
+279.	    def __init__(self, base_models, meta_model, n_folds=5):
+280.	        self.base_models = base_models  # 第一层模型
+281.	        self.meta_model = meta_model    # 第二层模型
+282.	        self.n_folds = n_folds
+283.	
+284.	    # 运用克隆的基本模型拟合数据
+285.	    def fit(self, X, y):
+286.	        self.base_models_ = [list() for x in self.base_models]
+287.	        self.meta_model_ = clone(self.meta_model)
+288.	        kfold = KFold(n_splits=self.n_folds, shuffle=True, random_state=156)
+289.	
+290.	        # 训练克隆的第一层模型
+291.	        out_of_fold_predictions = np.zeros((X.shape[0], len(self.base_models)))
+292.	        for i, model in enumerate(self.base_models):
+293.	            for train_index, holdout_index in kfold.split(X, y):
+294.	                instance = clone(model)
+295.	                self.base_models_[i].append(instance)
+296.	                instance.fit(X[train_index], y[train_index])
+297.	                y_pred = instance.predict(X[holdout_index])
+298.	                out_of_fold_predictions[holdout_index, i] = y_pred
+299.	
+300.	        # 使用交叉验证预测的结果作为新特征，来训练克隆的第二层模型
+301.	        self.meta_model_.fit(out_of_fold_predictions, y)
+302.	        return self
+303.	
+304.	    # 在测试数据上做所有基础模型的预测，并使用平均预测作为由元模型完成的最终预测的元特征
+305.	    def predict(self, X):
+306.	        meta_features = np.column_stack([np.column_stack([model.predict(X) for model in base_models]).mean(axis=1) 
+307.	                                         for base_models in self.base_models_])
+308.	        return self.meta_model_.predict(meta_features)
+309.	stacked_averaged_models = StackingAveragedModels(base_models=(ENet, GBoost, KRR), meta_model=lasso)
+310.	
+311.	score = rmsle_cv(stacked_averaged_models)
+312.	print("Stacking Averaged models score: {:.4f} ({:.4f})".format(score.mean(), score.std()))
+313.	Stacking Averaged models score: 0.0010 (0.0001)
+314.	def rmsle(y, y_pred):
+315.	    return np.sqrt(mean_squared_error(y, y_pred))
+316.	stacked_averaged_models.fit(train.values, y_train)
+317.	stacked_train_pred = stacked_averaged_models.predict(train.values)
+318.	stacked_pred = np.expm1(stacked_averaged_models.predict(test.values))  
+319.	print(rmsle(y_train, stacked_train_pred))
+320.	0.0010523541128071056
+321.	model_xgb.fit(train, y_train)
+322.	xgb_train_pred = model_xgb.predict(train)
+323.	xgb_pred = np.expm1(model_xgb.predict(test))
+324.	print(rmsle(y_train, xgb_train_pred))
+325.	0.022940525287614862
+326.	model_lgb.fit(train, y_train)
+327.	lgb_train_pred = model_lgb.predict(train)
+328.	lgb_pred = np.expm1(model_lgb.predict(test.values))
+329.	print(rmsle(y_train, lgb_train_pred))
+330.	0.006933376120946312
+331.	print('集成模型的得分:{}'.format(rmsle(y_train, stacked_train_pred*0.70 + xgb_train_pred*0.15 + lgb_train_pred*0.15)))
+332.	集成模型的得分:0.004522920508962009
+333.	ensemble = stacked_pred*0.10 + xgb_pred*0.80 + lgb_pred*0.10
+334.	sub = pd.DataFrame()
+335.	sub['Price'] = y_test
+336.	sub['PrdictPrice'] = np.log1p(ensemble)
+337.	sub.to_csv('submission.csv', index=False)
+338.	import os
+339.	
+340.	# 获取当前工作目录
+341.	current_directory = os.getcwd()
+342.	
+343.	# 构建文件的完整路径
+344.	file_path = os.path.join(current_directory, "submission.csv")
+345.	
+346.	print("文件保存路径:", file_path)
+347.	文件保存路径: C:\Users\王飞扬\submission.csv
